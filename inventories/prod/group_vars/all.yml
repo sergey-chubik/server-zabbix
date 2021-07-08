@@ -1,0 +1,19 @@
+---
+
+ovirt_vm_name: zabbix
+ovirt_vm_ip: 10.66.198.156
+ovirt_template: Centos7
+ovirt_vm_cpu_sockets: 4
+ovirt_vm_cpu_cores: 1
+ovirt_vm_cpu_threads: 2
+ovirt_vm_memory: 4GiB
+ovirt_vm_memory_guaranteed: 4GiB
+zabbix_agent_zabbix_server_name: "{{ ansible_fqdn }}"
+firewall_firewalld_service_rules:
+  - service: http
+firewall_firewalld_port_rules:
+  - port: 10050-10051/tcp
+  - port: 161-162/udp
+ftp_server_url: citov.ekaterinburg.fsin.uis
+# Restoring PostgreSQL Database Zabbix
+zabbix_server_postgresql_restoring: false

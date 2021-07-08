@@ -1,0 +1,52 @@
+---
+
+- name: RUN CONFIGURE OVIRT ENVIRONMENT
+  hosts: all
+  connection: local
+  pre_tasks:
+    - stat:
+        path: "{{ inventory_dir }}/secrets/vars"
+      connection: local
+      register: secrets_path
+      become: no
+    - include_vars:
+        dir: "{{ secrets_path.stat.path }}"
+      when: secrets_path.stat.exists
+  roles:
+    - ovirt_vm_create
+
+- name: DEPLOY SERVER ZABBIX
+  hosts: all
+  roles:
+    - update_packages
+    - selinux
+    - zabbix_server
+    - zabbix_agent
+    - firewall
+  tasks:
+    - name: Restoring PostgreSQL Database Zabbix-server
+      block:
+        - name: Copy {{ zabbix_server_db_name }}.dump into /tmp
+          get_url:
+            url: "ftp://{{ ftp_server_user }}:{{ ftp_server_password }}@{{ ftp_server_url }}/postgresql/{{ zabbix_server_db_name }}.dump"
+            dest: /tmp
+        - name: Stop service zabbix-server
+          service:
+            name: zabbix-server
+            state: stopped
+        - name: Delete an existing database {{ zabbix_server_db_name }}
+          become: true
+          become_user: "{{ zabbix_server_postgres_db_user }}"
+          postgresql_db:
+            name: "{{ zabbix_server_db_name }}"
+            state: absent
+        - name: Restore database {{ zabbix_server_db_name }}
+          become: true
+          become_user: "{{ zabbix_server_postgres_db_user }}"
+          command: "pg_restore -C -d postgres /tmp/{{ zabbix_server_db_name }}.dump"
+          ignore_errors: yes
+        - name: Start service zabbix-server
+          service:
+            name: zabbix-server
+            state: started
+      when: zabbix_server_postgresql_restoring | default(false) and zabbix_server_postgresql_install.changed

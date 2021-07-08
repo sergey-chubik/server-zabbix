@@ -1,0 +1,20 @@
+---
+
+- src: git+http://gitlab.ekaterinburg.fsin.uis/ansible/ansible-role-ovirt_vm_create.git
+  version: origin/master
+  name: ovirt_vm_create
+- src: git+http://gitlab.ekaterinburg.fsin.uis/ansible/ansible-role-update_packages.git
+  version: origin/master
+  name: update_packages
+- src: git+http://gitlab.ekaterinburg.fsin.uis/ansible/ansible-role-selinux.git
+  version: origin/master
+  name: selinux
+- src: git+http://gitlab.ekaterinburg.fsin.uis/ansible/ansible-role-zabbix_server.git
+  version: origin/master
+  name: zabbix_server
+- src: git+http://gitlab.ekaterinburg.fsin.uis/ansible/ansible-role-firewall.git
+  version: origin/master
+  name: firewall
+- src: git+http://gitlab.ekaterinburg.fsin.uis/ansible/ansible-role-zabbix_agent.git
+  version: origin/master
+  name: zabbix_agent

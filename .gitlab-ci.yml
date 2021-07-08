@@ -1,0 +1,44 @@
+---
+
+stages:
+  - test
+  - stage
+  - prod
+
+variables:
+  DEPLOY_SECRETS: "secrets/zabbix"
+
+# Test Section
+
+YAML Linter:
+  stage: test
+  script:
+    - rm -f ~/.ssh/known_hosts
+    - yamllint -c .yamllint.yml .
+  tags:
+    - shell
+
+# Deploy Section
+
+.deploy:
+  before_script:
+    - git checkout -B "${CI_COMMIT_REF_NAME}" "${CI_COMMIT_SHA}"
+    - git clone ${CI_SERVER_PROTOCOL}://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${DEPLOY_SECRETS}/${CI_JOB_STAGE}.git "./inventories/${CI_JOB_STAGE}/secrets" || true
+  script:
+    - ansible-galaxy install -f -r ./requirements.yml
+    - ansible-playbook ./deploy_${CI_JOB_STAGE}.yml -i "./inventories/${CI_JOB_STAGE}/hosts"
+  after_script:
+    - rm -rf ./*
+  tags:
+    - shell
+
+Deploy to Stage:
+  stage: stage
+  extends:
+    - .deploy
+
+Deploy to Prod:
+  stage: prod
+  extends:
+    - .deploy
+  when: manual
